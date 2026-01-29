@@ -70,8 +70,15 @@ function getBigQueryOptions(): BigQueryOptions {
     }
 }
 
-// Initialize the BigQuery client
-const bigquery = new BigQuery(getBigQueryOptions())
+// Initialize the BigQuery client lazily
+let bigqueryInstance: BigQuery | null = null;
+
+function getBigQueryClient(): BigQuery {
+    if (!bigqueryInstance) {
+        bigqueryInstance = new BigQuery(getBigQueryOptions())
+    }
+    return bigqueryInstance
+}
 
 /**
  * Execute a parameterized query against BigQuery.
@@ -94,7 +101,8 @@ export async function queryBigQuery<T = any>(sql: string, params?: { [key: strin
     }
 
     try {
-        const [rows] = await bigquery.query(options)
+        const client = getBigQueryClient()
+        const [rows] = await client.query(options)
         return rows as T[]
     } catch (error) {
         console.error('BigQuery Query Error:', error)
