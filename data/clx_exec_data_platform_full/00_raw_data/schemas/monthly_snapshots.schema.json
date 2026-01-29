@@ -1,0 +1,42 @@
+[
+  {
+    "name": "snapshot_month",
+    "type": "DATE",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "customer_id",
+    "type": "INT64",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "spend_usd",
+    "type": "FLOAT64",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "statement_balance_usd",
+    "type": "FLOAT64",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "payment_usd",
+    "type": "FLOAT64",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "is_delinquent",
+    "type": "BOOL",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "is_churned",
+    "type": "BOOL",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "nps_0_10",
+    "type": "INT64",
+    "mode": "NULLABLE"
+  }
+]

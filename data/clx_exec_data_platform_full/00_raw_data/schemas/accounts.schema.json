@@ -1,0 +1,32 @@
+[
+  {
+    "name": "account_id",
+    "type": "INT64",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "customer_id",
+    "type": "INT64",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "credit_limit_usd",
+    "type": "INT64",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "fico_score",
+    "type": "INT64",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "apr_percent",
+    "type": "FLOAT64",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "risk_band",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  }
+]

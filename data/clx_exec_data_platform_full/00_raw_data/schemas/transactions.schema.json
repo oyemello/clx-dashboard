@@ -1,0 +1,42 @@
+[
+  {
+    "name": "transaction_id",
+    "type": "INT64",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "customer_id",
+    "type": "INT64",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "tx_date",
+    "type": "DATE",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "category",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "channel",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "amount_usd",
+    "type": "FLOAT64",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "is_fraud",
+    "type": "BOOL",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "is_disputed",
+    "type": "BOOL",
+    "mode": "NULLABLE"
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "name": "customer_id",
+    "type": "INT64",
+    "mode": "REQUIRED"
+  },
+  {
+    "name": "country",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "segment",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "product_tier",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "open_date",
+    "type": "DATE",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "dob",
+    "type": "DATE",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "digital_adoption_score",
+    "type": "INT64",
+    "mode": "NULLABLE"
+  },
+  {
+    "name": "acquisition_channel",
+    "type": "STRING",
+    "mode": "NULLABLE"
+  }
+]
