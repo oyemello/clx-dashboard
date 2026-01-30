@@ -6,6 +6,8 @@ import {
 } from "recharts"
 import { VisualizationType } from "@/lib/dashboard-types"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { extractLabels } from "@/lib/label-utils"
+import { Badge } from "@/components/ui/badge"
 
 interface UniversalChartProps {
     title: string;
@@ -140,10 +142,23 @@ export function UniversalChart({ title, type, data, metricId, dateKey = "date", 
         }
     }
 
+    const { displayTitle, labels } = extractLabels(title)
+
     return (
         <Card className="h-full flex flex-col">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle>{title}</CardTitle>
+                <div className="flex items-center gap-2">
+                    <CardTitle>{displayTitle}</CardTitle>
+                    {labels.length > 0 && (
+                        <div className="flex flex-wrap gap-1">
+                            {labels.map((lbl, i) => (
+                                <Badge key={i} variant="outline" className="px-1.5 py-0 text-[10px] uppercase tracking-wider font-semibold bg-white text-gray-500 hover:bg-white border-border opacity-100">
+                                    {lbl}
+                                </Badge>
+                            ))}
+                        </div>
+                    )}
+                </div>
                 {headerContent}
             </CardHeader>
             <CardContent className="flex-1 min-h-0">

@@ -3,6 +3,9 @@ import { cn } from "@/lib/utils"
 import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react"
 import { MetricDefinition } from "@/lib/connectors/types"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
+import { useCardSettings } from "@/components/card-settings-provider"
+import { extractLabels } from "@/lib/label-utils"
 
 interface KPICardProps {
     metric: MetricDefinition;
@@ -15,6 +18,8 @@ interface KPICardProps {
 }
 
 export function KPICard({ metric, title, data, loading, selected, onClick, className }: KPICardProps) {
+    const { showLabels, showTrend, showSubtext } = useCardSettings()
+
     if (loading) {
         return (
             <Card className={cn("transition-all h-full p-4 flex flex-col justify-between", className)}>
@@ -28,21 +33,7 @@ export function KPICard({ metric, title, data, loading, selected, onClick, class
     }
 
     // Calculate current value (sum or last value depending on logic)
-    // For simplicity, we sum the last month or use the last data point
     const lastPoint = data && data.length > 0 ? data[data.length - 1] : null
-
-    // Naive Logic: Access the key matching the metric SQL alias or ID
-    // In our connector, ID is like 'kpi_...' 
-    // The data points usually have keys like 'month' and 'value' or specific metric keys?
-    // Let's assume the API returns data where key = metric.id or 'val'
-    // NOTE: The API response format usually matches the metric ID if generating dynamic queries.
-    // Or it returns a standard structure. 
-    // Let's assume for now the data point has a key matching the metric ID?
-    // Actually, `TrendChart` likely knows the data shape.
-    // Inspecting `TrendChart`... it uses `dataKey="value"`.
-    // So distinct API calls per metric? Yes, insights-panel does that.
-
-    // If usage is ONE card per metric, we get `data` specific to that metric.
     const currentValue = lastPoint ? (lastPoint.value || lastPoint[metric.id] || 0) : 0
     const previousValue = data && data.length > 1 ? (data[data.length - 2]?.value || 0) : 0
 
@@ -56,6 +47,15 @@ export function KPICard({ metric, title, data, loading, selected, onClick, class
             ? `${currentValue.toFixed(1)}%`
             : currentValue.toLocaleString()
 
+    let displayTitle = title || metric.label
+    let labels: string[] = []
+
+    const { displayTitle: cleanTitle, labels: extractedLabels } = extractLabels(title || metric.label)
+    displayTitle = cleanTitle
+    labels = extractedLabels
+
+
+
     return (
         <Card
             className={cn(
@@ -65,27 +65,42 @@ export function KPICard({ metric, title, data, loading, selected, onClick, class
             )}
             onClick={onClick}
         >
-            <div className="text-sm font-medium text-muted-foreground">
-                {title || metric.label}
+            <div className="flex flex-col items-start gap-1.5">
+                <div className="text-sm font-medium text-muted-foreground truncate w-full min-h-[20px]" title={displayTitle}>
+                    {displayTitle}
+                </div>
+                {showLabels && labels.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                        {labels.map((lbl, i) => (
+                            <Badge key={i} variant="outline" className="px-1.5 py-0 text-[10px] uppercase tracking-wider font-semibold bg-white text-gray-500 hover:bg-white border-border opacity-100">
+                                {lbl}
+                            </Badge>
+                        ))}
+                    </div>
+                )}
             </div>
 
             <div className="mt-4">
                 <div className="text-2xl font-bold tracking-tight">{formattedValue}</div>
-                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                    {data.length > 1 ? (
-                        <>
-                            <span className={isPositive ? "text-emerald-500 flex items-center" : "text-red-500 flex items-center"}>
-                                {isPositive ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
-                                {Math.abs(Number(percentage))}%
+                {(showTrend || showSubtext) && (
+                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                        {data.length > 1 ? (
+                            <>
+                                {showTrend && (
+                                    <span className={isPositive ? "text-emerald-500 flex items-center" : "text-red-500 flex items-center"}>
+                                        {isPositive ? <ArrowUpRight className="h-3 w-3 mr-1" /> : <ArrowDownRight className="h-3 w-3 mr-1" />}
+                                        {Math.abs(Number(percentage))}%
+                                    </span>
+                                )}
+                                {showSubtext && <span>from last period</span>}
+                            </>
+                        ) : (
+                            <span className="flex items-center text-slate-400">
+                                <Minus className="h-3 w-3 mr-1" /> No prior data
                             </span>
-                            <span>from last period</span>
-                        </>
-                    ) : (
-                        <span className="flex items-center text-slate-400">
-                            <Minus className="h-3 w-3 mr-1" /> No prior data
-                        </span>
-                    )}
-                </div>
+                        )}
+                    </div>
+                )}
             </div>
         </Card>
     )

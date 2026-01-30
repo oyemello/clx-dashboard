@@ -43,11 +43,7 @@ const data = {
             url: "/metrics-config",
             icon: SlidersHorizontal,
         },
-        {
-            title: "Settings",
-            url: "/settings",
-            icon: Settings2,
-        },
+
         {
             title: "Connectors",
             url: "/connectors",
@@ -76,6 +72,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarMenu>
                 <div className="mt-auto">
                     <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton tooltip="Settings" isActive={pathname === "/settings"} asChild>
+                                <a href="/settings">
+                                    <Settings2 />
+                                    <span>Settings</span>
+                                </a>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
                         <SidebarMenuItem>
                             <SidebarTrigger />
                         </SidebarMenuItem>

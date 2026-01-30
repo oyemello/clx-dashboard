@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useColorTheme } from "@/components/color-theme-provider"
 import { useState, useEffect } from "react"
 import { Check, Loader2 } from "lucide-react"
+import { useCardSettings } from "@/components/card-settings-provider"
 
 export function SettingsPanel() {
     const { setTheme, theme } = useTheme()
@@ -57,6 +58,7 @@ export function SettingsPanel() {
                 <Tabs defaultValue="appearance" className="space-y-4">
                     <TabsList>
                         <TabsTrigger value="appearance">Appearance</TabsTrigger>
+                        <TabsTrigger value="card-metrics">Card Metrics</TabsTrigger>
                     </TabsList>
 
 
@@ -131,9 +133,69 @@ export function SettingsPanel() {
                         </Card>
                     </TabsContent>
 
+                    <TabsContent value="card-metrics" className="space-y-4">
+                        <CardMetricsSettings />
+                    </TabsContent>
+
 
                 </Tabs>
             </div>
         </div >
+    )
+}
+
+function CardMetricsSettings() {
+    const { showLabels, setShowLabels, showTrend, setShowTrend, showSubtext, setShowSubtext } = useCardSettings()
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Card Metrics</CardTitle>
+                <CardDescription>Control the display of KPI cards on the dashboard.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div className="flex items-center justify-between space-x-2">
+                    <Label htmlFor="show-labels" className="flex flex-col space-y-1 text-left items-start">
+                        <span>Show Labels</span>
+                        <span className="font-normal text-xs text-muted-foreground">
+                            Extract tags from titles and show as badges (e.g. "customer_finance Count" → Label: "Customer Finance").
+                        </span>
+                    </Label>
+                    <Switch
+                        id="show-labels"
+                        checked={showLabels}
+                        onCheckedChange={setShowLabels}
+                    />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between space-x-2">
+                    <Label htmlFor="show-trend" className="flex flex-col space-y-1 text-left items-start">
+                        <span>Show Trend Indicator</span>
+                        <span className="font-normal text-xs text-muted-foreground">
+                            Display the percentage change arrow and value.
+                        </span>
+                    </Label>
+                    <Switch
+                        id="show-trend"
+                        checked={showTrend}
+                        onCheckedChange={setShowTrend}
+                    />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between space-x-2">
+                    <Label htmlFor="show-subtext" className="flex flex-col space-y-1 text-left items-start">
+                        <span>Show Subtext</span>
+                        <span className="font-normal text-xs text-muted-foreground">
+                            Display the "from last period" text.
+                        </span>
+                    </Label>
+                    <Switch
+                        id="show-subtext"
+                        checked={showSubtext}
+                        onCheckedChange={setShowSubtext}
+                    />
+                </div>
+            </CardContent>
+        </Card>
     )
 }

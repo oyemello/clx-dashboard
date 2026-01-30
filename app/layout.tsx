@@ -3,6 +3,7 @@ import { DynamicBreadcrumb } from "@/components/bank-dashboard/dynamic-breadcrum
 import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ColorThemeProvider } from "@/components/color-theme-provider"
+import { CardSettingsProvider } from "@/components/card-settings-provider"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -59,15 +60,17 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <ColorThemeProvider>
-            <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset>
+            <CardSettingsProvider>
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>
 
-                <div className="flex flex-1 flex-col h-full max-h-screen w-full max-w-full overflow-hidden">
-                  {children}
-                </div>
-              </SidebarInset>
-            </SidebarProvider>
+                  <div className="flex flex-1 flex-col h-full max-h-screen w-full max-w-full overflow-hidden">
+                    {children}
+                  </div>
+                </SidebarInset>
+              </SidebarProvider>
+            </CardSettingsProvider>
           </ColorThemeProvider>
         </ThemeProvider>
         <Toaster />
