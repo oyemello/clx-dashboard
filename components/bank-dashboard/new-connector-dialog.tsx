@@ -127,7 +127,10 @@ export const ${formData.id ? formData.id.toUpperCase() : 'NEW_CONNECTOR'}: Conne
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {children || (
-                    <Button className="bg-[#006fcf] hover:bg-[#0059b3] text-white gap-2">
+                    <Button
+                        className="bg-[#006fcf] hover:bg-[#0059b3] text-white gap-2"
+                        suppressHydrationWarning
+                    >
                         <Plus className="h-4 w-4" />
                         New Connection
                     </Button>

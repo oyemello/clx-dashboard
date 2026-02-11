@@ -7,6 +7,7 @@ import {
     Command,
     Database,
     SlidersHorizontal,
+    LineChart,
 } from "lucide-react"
 
 import { usePathname } from "next/navigation"
@@ -48,6 +49,11 @@ const data = {
             title: "Connectors",
             url: "/connectors",
             icon: Database,
+        },
+        {
+            title: "Insights",
+            url: "/insights",
+            icon: LineChart,
         }
     ],
 }

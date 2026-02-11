@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { isWithinInterval, parseISO, startOfDay, endOfDay } from "date-fns"
+import { isWithinInterval, parseISO, startOfDay, endOfDay, compareAsc } from "date-fns"
 import { Customer } from "@/lib/data"
 import { PageHeader } from "@/components/ui/page-header"
 import { DashboardMetricConfig, DEFAULT_VISUALIZATION_TYPE } from "@/lib/dashboard-types"
@@ -231,15 +231,35 @@ export function DashboardShell({ }: DashboardShellProps) {
                 if (!item.date) return false
                 const itemDate = parseISO(item.date)
                 return isWithinInterval(itemDate, { start, end })
-            })
+            }).sort((a, b) => compareAsc(parseISO(a.date), parseISO(b.date)))
         }
 
+        // For fixed ranges, we assume data is already sorted by date from the API/store
+        // But if we want to be safe, we could sort here too. 
+        // Typically recent data is at the end.
         if (timeRange === "3M") return data.slice(Math.max(len - 3, 0))
         if (timeRange === "6M") return data.slice(Math.max(len - 6, 0))
         return data
     }
 
+    const getFilteredComparisonData = (data: any[]) => {
+        if (!data) return []
+        if (!compareDate?.from || !compareDate?.to) return [] // If no compare date, no data
+
+        // Filter by compareDate range
+        const start = startOfDay(compareDate.from)
+        const end = endOfDay(compareDate.to)
+        return data.filter(item => {
+            if (!item.date) return false
+            const itemDate = parseISO(item.date)
+            return isWithinInterval(itemDate, { start, end })
+        }).sort((a, b) => compareAsc(parseISO(a.date), parseISO(b.date)))
+    }
+
     const filteredMetricData = selectedMetricId ? getFilteredData(metricData[selectedMetricId] || []) : []
+    const filteredCompareData = selectedMetricId && compareDate
+        ? getFilteredComparisonData(compareMetricData[selectedMetricId] || [])
+        : []
 
     return (
         <div className="grid h-full w-full max-w-full bg-slate-50/50 overflow-hidden p-2 gap-2 grid-rows-[auto_1fr]">
@@ -276,8 +296,8 @@ export function DashboardShell({ }: DashboardShellProps) {
                             title={selectedConfig.customTitle || selectedMetricDef.label}
                             type={selectedConfig.visualizationType}
                             data={filteredMetricData}
-                            compareData={selectedMetricId ? compareMetricData[selectedMetricId] : []}
-                            metricId="current"
+                            compareData={filteredCompareData}
+                            metricId={selectedMetricId}
                             loading={loadingMetrics[selectedMetricId]}
                             headerContent={
                                 <div className="flex items-center">
@@ -347,7 +367,10 @@ export function DashboardShell({ }: DashboardShellProps) {
                                                             mode="range"
                                                             defaultMonth={date?.from}
                                                             selected={date}
-                                                            onSelect={setDate}
+                                                            onSelect={(range) => {
+                                                                setDate(range)
+                                                                if (range?.from) setTimeRange("custom")
+                                                            }}
                                                             numberOfMonths={1}
                                                         />
                                                     </div>
@@ -387,6 +410,7 @@ export function DashboardShell({ }: DashboardShellProps) {
                                                         onClick={() => {
                                                             setCompareDate(tempCompareDate)
                                                             setIsCompareOpen(false)
+                                                            setTimeRange("custom")
                                                         }}
                                                         disabled={!tempCompareDate?.from || !tempCompareDate?.to}
                                                     >

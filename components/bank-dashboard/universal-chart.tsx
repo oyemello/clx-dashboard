@@ -27,6 +27,7 @@ export function UniversalChart({ title, type, data, metricId, dateKey = "date", 
         return <Card className="animate-pulse h-[350px]" />
     }
 
+    const { displayTitle, labels } = extractLabels(title)
     const dataKey = data?.length && data[0]?.[metricId] !== undefined ? metricId : 'value'
 
     const chartData = compareData && compareData.length > 0
@@ -44,7 +45,7 @@ export function UniversalChart({ title, type, data, metricId, dateKey = "date", 
         if (type === 'pie') {
             const sum = data.reduce((acc, curr) => acc + (Number(curr[dataKey]) || 0), 0)
             // Pie ignores comparison for now
-            const pieData = [{ name: title, value: sum }]
+            const pieData = [{ name: displayTitle, value: sum }]
             return (
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -79,7 +80,7 @@ export function UniversalChart({ title, type, data, metricId, dateKey = "date", 
                     contentStyle={{ backgroundColor: 'white', borderRadius: '8px', border: '1px solid #e2e8f0' }}
                     itemStyle={{ color: '#1e293b' }}
                 />
-                <Legend />
+                {compareData && compareData.length > 0 && <Legend />}
             </>
         )
 
@@ -90,8 +91,8 @@ export function UniversalChart({ title, type, data, metricId, dateKey = "date", 
                         <BarChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" />
                             {CommonAxis()}
-                            <Bar dataKey={dataKey} fill="#0f172a" radius={[4, 4, 0, 0]} name={title} />
-                            {compareData && <Bar dataKey="compareValue" fill="#006fcf" radius={[4, 4, 0, 0]} name="Previous" />}
+                            <Bar dataKey={dataKey} fill="#006fcf" radius={[4, 4, 0, 0]} name={displayTitle} />
+                            {compareData && <Bar dataKey="compareValue" fill="#94a3b8" radius={[4, 4, 0, 0]} name="Comparison" />}
                         </BarChart>
                     </ResponsiveContainer>
                 )
@@ -101,8 +102,8 @@ export function UniversalChart({ title, type, data, metricId, dateKey = "date", 
                         <AreaChart data={chartData}>
                             <defs>
                                 <linearGradient id={`grad-${metricId}`} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#0f172a" stopOpacity={0.1} />
-                                    <stop offset="95%" stopColor="#0f172a" stopOpacity={0} />
+                                    <stop offset="5%" stopColor="#006fcf" stopOpacity={0.1} />
+                                    <stop offset="95%" stopColor="#006fcf" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e5e5" />
@@ -110,12 +111,12 @@ export function UniversalChart({ title, type, data, metricId, dateKey = "date", 
                             <Area
                                 type="monotone"
                                 dataKey={dataKey}
-                                stroke="#0f172a"
+                                stroke="#006fcf"
                                 fillOpacity={1}
                                 fill={`url(#grad-${metricId})`}
-                                name={title}
+                                name={displayTitle}
                             />
-                            {compareData && <Area type="monotone" dataKey="compareValue" stroke="#006fcf" fill="none" name="Previous" />}
+                            {compareData && <Area type="monotone" dataKey="compareValue" stroke="#94a3b8" fill="none" name="Comparison" />}
                         </AreaChart>
                     </ResponsiveContainer>
                 )
@@ -129,20 +130,20 @@ export function UniversalChart({ title, type, data, metricId, dateKey = "date", 
                             <Line
                                 type="monotone"
                                 dataKey={dataKey}
-                                stroke="#0f172a"
+                                stroke="#006fcf"
                                 strokeWidth={2}
                                 dot={false}
                                 activeDot={{ r: 6 }}
-                                name={title}
+                                name={displayTitle}
                             />
-                            {compareData && <Line type="monotone" dataKey="compareValue" stroke="#006fcf" strokeWidth={2} dot={false} name="Previous" />}
+                            {compareData && <Line type="monotone" dataKey="compareValue" stroke="#94a3b8" strokeWidth={2} dot={false} name="Comparison" />}
                         </LineChart>
                     </ResponsiveContainer>
                 )
         }
     }
 
-    const { displayTitle, labels } = extractLabels(title)
+
 
     return (
         <Card className="h-full flex flex-col">

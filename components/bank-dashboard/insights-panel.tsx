@@ -30,7 +30,8 @@ const mockChartData = [
     { date: 'M-0', current: 4245, previous: 4100 },
 ]
 
-export function InsightsPanel() {
+// Accepting props to maintain compatibility with page.tsx, but ignoring them to use mock data
+export function InsightsPanel(props: any) {
     return (
         <div className="w-full h-full p-6 space-y-8 animate-in slide-in-from-right-4 duration-500">
             {/* Section 1: Header */}
