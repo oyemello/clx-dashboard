@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "bankingmetrics",
+  "private_key_id": "8321b229f8b58d23295dc6470aa04577ebf4eafd",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDPZBrO2fcAyFDZ\n9Aziz5lFh6TkyH5NEwNBF0r02PMML88ncChTBmR3DyVj7LbNy7Zz6wFLjVyZJ8Zx\n714FNmsf3NVZ8gCzHgKRZNzCgmYO9OW9OXytM1+ndOyfQ43l3IA/0LWhoZWk8l27\ne+6W42V64/PF2MxGiTFDRUOdthqoZWRlpVn29w060ArAXeNTSJd4CPLs1CcUtO1S\nP8nhwX1YXBYneYLqTsSM2Y8usLJEx1w0dFhr/irCYTmSHcrHGdhWuo7cbAY0eHAS\ntp8PU10BPCgZOBSCMH3FP89+5UHbsVSPKFDZZpYF1yDeTlWMLxAJ+CuNWJl9h3Bh\nd4oOEYNzAgMBAAECgf9AIjTSwuoffn2CPnZoWB/jNeSdhg2IyC25c0/lZ9xsEwd8\nqrJ4T6xsem1ATsjj20YQ6BupFuNhJBZk0CEYe5D6dCWGKyW26RDiOs60rUk3rC60\n1ZI4qCpsc+a4rwCylKhpvkvCMAtBdwcwHfh/sNKGWPffDFbKI/hCqqi+R2ehqyqg\nZSNKqcvxKuHRwGeEvFQ5kyY8Tnlnha8KKlBAZWsKAlDqpU+4IWH+AFotbyJos2gV\no40tWzgbwWw8HcLNlGpOL1Z72xxHhdHqf2wNuSnS3ex+hu9oCSlSewn8g/vCPN15\nlm1E2oxpYz5SEdhTXwwJx5oevZEYDtDcM5NC8N0CgYEA7gDXev28+3ufm7skPy4p\nnoqa4NLgqSoDcfOeK+WtPf5gBWLY4CYRsvnIJkly+iG76Wpv1c+MjL3WdJUw/PX8\nmCADiEumrc7qQWTh2nimPGbPww8SAoK7E99F/OefuXirOQD0elba5agyluFEjF48\njhXprPtgHd0UR0o+kDDio2cCgYEA3xKvX7eUU7Je0BLONMmWCK85Hxw/4gSTBA/k\n69yuYG/HLZKg+fk+WwOLLQhsrVOLPIK6xgkSBRIY815ZJWMlKwb2snuqF9MR5zJ2\nb87Lr0W1+BUWIU2zLGDvfhU1dkDk1M3ze1pLmwcUI3Q1+6PQ9zKYjOgsKBYThPoQ\nOZRfhBUCgYEA3rI27cRCcmWIQOVo0x1UoB49MSTgRikjtBop5BUydxFvs1p8Z6/3\nW6pQ11JenSG3fH61SjC76G0xH0EB55Ab3BQIeh2fRn6XvrywgAXoNhhVSsTtKyA8\nACooiK4KTDdWry3vlBF1HPK282qxA06iBqkGT2+ezhKxCMu1oqG7Tv0CgYEAq7Fr\n/hYEOi9NvoTa5dJKgkCrjIBnwwSWS0gYgFmIdX1TJoZ3FC98iPy/QFf9naJxxo8w\nRoBwuCpnvdleb+JRlz5y3olEL7YrT3GNqxzVtP/IwTspn1R4la2+Z6LXVT85YXlq\n8ARdsOLP40Hs0tQRYFI3DC0e33Oubmkx17+VjMkCgYAz/66/Xc0CgkGoENj0xHsU\nf3PAko0qURIbfn8YwUGgr+sbWMgviotB7JYx19pJVrClj5JEtgPmw/nk8yIRRkRE\nTweuPsg28n0OmENZwzEuYZpeIAiEVGIdohyNLTum07dmK+1+fH21gaVhQ7tq+DJi\n3PDIV14hpg0a3FnWYp93vg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "bigquery-backend@bankingmetrics.iam.gserviceaccount.com",
+  "client_id": "106368946749653340233",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/bigquery-backend%40bankingmetrics.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
