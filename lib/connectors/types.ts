@@ -3,9 +3,20 @@ export type ConnectorProvider = 'bigquery' | 'snowflake' | 'redshift' | 'postgre
 export type Environment = 'dev' | 'staging' | 'prod';
 
 export interface ConnectorAuth {
-    type: 'service_account' | 'adc' | 'oauth';
+    type: 'service_account' | 'adc' | 'oauth' | 'postgres';
     keyFile?: string; // Path to key file (optional)
     jsonContent?: string; // Raw JSON content (optional, for dynamic auth)
+    // PostgreSQL credentials
+    host?: string;
+    port?: number;
+    database?: string;
+    username?: string;
+    password?: string;
+    sslMode?: 'disable' | 'allow' | 'prefer' | 'require' | 'verify-ca' | 'verify-full';
+    connectionTimeout?: number;
+    schema?: string;
+    readReplicaEnabled?: boolean;
+    connectionPoolSize?: number;
 }
 
 export interface ConnectorMetadata {

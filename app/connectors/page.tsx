@@ -80,8 +80,13 @@ export default function ConnectorsPage() {
             setHandshake(null)
             setRealDiscovery(null)
             try {
+                // Determine provider and use appropriate endpoint
+                const provider = activeConnector.metadata.provider
+                const testEndpoint = `/api/connectors/${provider}/test`
+                const discoverEndpoint = `/api/connectors/${provider}/discover`
+
                 // 1. Handshake (POST with config)
-                const res = await fetch(`/api/connectors/bigquery/test`, {
+                const res = await fetch(testEndpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ connector: activeConnector })
@@ -91,7 +96,7 @@ export default function ConnectorsPage() {
 
                 if (data.ok) {
                     // 2. Real Discovery (POST with config)
-                    const discRes = await fetch(`/api/connectors/bigquery/discover`, {
+                    const discRes = await fetch(discoverEndpoint, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ connector: activeConnector, type: 'datasets' })

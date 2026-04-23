@@ -43,7 +43,18 @@ export function NewConnectorDialog({ onConnectorCreated, initialData, children }
         region: initialData?.metadata.defaultLocation || '',
         project: initialData?.metadata.project || '',
         dataset: initialData?.sources?.[0]?.id || '',
-        jsonContent: initialData?.auth.jsonContent || ''
+        jsonContent: initialData?.auth.jsonContent || '',
+        // PostgreSQL fields
+        pgHost: initialData?.auth.host || '',
+        pgPort: initialData?.auth.port || 5432,
+        pgDatabase: initialData?.auth.database || '',
+        pgUsername: initialData?.auth.username || '',
+        pgPassword: initialData?.auth.password || '',
+        pgSslMode: (initialData?.auth.sslMode || 'disable') as 'disable' | 'allow' | 'prefer' | 'require' | 'verify-ca' | 'verify-full',
+        pgConnectionTimeout: initialData?.auth.connectionTimeout || 10,
+        pgSchema: initialData?.auth.schema || '',
+        pgReadReplica: initialData?.auth.readReplicaEnabled || false,
+        pgPoolSize: initialData?.auth.connectionPoolSize || 10,
     })
 
     const isEditMode = !!initialData
@@ -57,34 +68,64 @@ export function NewConnectorDialog({ onConnectorCreated, initialData, children }
     const generateId = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '_')
 
     const createConfigObject = (): ConnectorConfig => {
+        const isBigQuery = formData.provider === 'bigquery'
+        
         return {
             metadata: {
                 id: formData.id || generateId(formData.name) || 'new_connector',
                 name: formData.name,
                 provider: formData.provider as ConnectorProvider,
                 environments: ['dev', 'prod'],
-                defaultLocation: formData.region || 'US',
-                project: formData.project
+                defaultLocation: formData.region || (isBigQuery ? 'US' : 'local'),
+                project: isBigQuery ? formData.project : formData.pgHost
             },
-            auth: {
-                type: 'service_account',
-                jsonContent: formData.jsonContent
-            },
+            auth: isBigQuery
+                ? {
+                    type: 'service_account',
+                    jsonContent: formData.jsonContent
+                }
+                : {
+                    type: 'postgres',
+                    host: formData.pgHost,
+                    port: formData.pgPort,
+                    database: formData.pgDatabase,
+                    username: formData.pgUsername,
+                    password: formData.pgPassword,
+                    sslMode: formData.pgSslMode,
+                    connectionTimeout: formData.pgConnectionTimeout,
+                    schema: formData.pgSchema,
+                    readReplicaEnabled: formData.pgReadReplica,
+                    connectionPoolSize: formData.pgPoolSize,
+                },
             sources: initialData?.sources?.length
                 ? initialData.sources
-                : formData.dataset
-                    ? [{
-                        id: formData.dataset,
-                        description: 'User-specified dataset',
-                        governance: {
-                            owner: '',
-                            piiClassification: 'sensitive',
-                            retentionPolicy: '',
-                            allowedConsumers: [],
-                        },
-                        tables: []
-                    }]
-                    : [],
+                : isBigQuery
+                    ? (formData.dataset
+                        ? [{
+                            id: formData.dataset,
+                            description: 'User-specified dataset',
+                            governance: {
+                                owner: '',
+                                piiClassification: 'sensitive',
+                                retentionPolicy: '',
+                                allowedConsumers: [],
+                            },
+                            tables: []
+                        }]
+                        : [])
+                    : (formData.pgDatabase
+                        ? [{
+                            id: formData.pgDatabase,
+                            description: `PostgreSQL database: ${formData.pgDatabase}`,
+                            governance: {
+                                owner: '',
+                                piiClassification: 'sensitive',
+                                retentionPolicy: '',
+                                allowedConsumers: [],
+                            },
+                            tables: []
+                        }]
+                        : []),
             validation: initialData?.validation || [],
             discovery: initialData?.discovery || {
                 totalDatasets: 0,
@@ -96,7 +137,16 @@ export function NewConnectorDialog({ onConnectorCreated, initialData, children }
     }
 
     const handleCreate = () => {
-        if (!formData.name || !formData.provider || !formData.project || !formData.dataset || !formData.jsonContent) return
+        const isBigQuery = formData.provider === 'bigquery'
+        
+        // Validate required fields based on provider
+        if (!formData.name || !formData.provider) return
+        
+        if (isBigQuery) {
+            if (!formData.project || !formData.dataset || !formData.jsonContent) return
+        } else if (formData.provider === 'postgres') {
+            if (!formData.pgHost || !formData.pgPort || !formData.pgDatabase || !formData.pgUsername || !formData.pgPassword) return
+        }
 
         const newConfig = createConfigObject()
 
@@ -104,7 +154,25 @@ export function NewConnectorDialog({ onConnectorCreated, initialData, children }
             onConnectorCreated(newConfig)
             setOpen(false)
             if (!isEditMode) {
-                setFormData({ name: '', provider: '', id: '', region: '', project: '', dataset: '', jsonContent: '' })
+                setFormData({
+                    name: '',
+                    provider: '',
+                    id: '',
+                    region: '',
+                    project: '',
+                    dataset: '',
+                    jsonContent: '',
+                    pgHost: '',
+                    pgPort: 5432,
+                    pgDatabase: '',
+                    pgUsername: '',
+                    pgPassword: '',
+                    pgSslMode: 'prefer',
+                    pgConnectionTimeout: 10,
+                    pgSchema: '',
+                    pgReadReplica: false,
+                    pgPoolSize: 10,
+                })
                 setStep('details')
             }
         } else {
@@ -164,119 +232,237 @@ export const ${formData.id ? formData.id.toUpperCase() : 'NEW_CONNECTOR'}: Conne
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-2">
-                                <Label>Region</Label>
-                                <Input
-                                    placeholder="e.g. us-east1"
-                                    value={formData.region}
-                                    onChange={e => setFormData(prev => ({ ...prev, region: e.target.value }))}
-                                />
-                            </div>
+                            {formData.provider === 'bigquery' && (
+                                <div className="space-y-2">
+                                    <Label>Region</Label>
+                                    <Input
+                                        placeholder="e.g. us-east1"
+                                        value={formData.region}
+                                        onChange={e => setFormData(prev => ({ ...prev, region: e.target.value }))}
+                                    />
+                                </div>
+                            )}
                         </div>
 
-                        <div className="space-y-2">
-                            <div className="flex items-center justify-between flex-wrap gap-2">
-                                <Label>Service Account JSON</Label>
-                                <div className="flex items-center gap-2">
-                                    <Input
-                                        type="file"
-                                        accept=".json"
-                                        className="hidden"
-                                        id="file-upload"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-                                            if (file) {
-                                                const reader = new FileReader();
-                                                reader.onload = (ev) => {
-                                                    try {
-                                                        const text = ev.target?.result as string;
-                                                        const json = JSON.parse(text);
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            jsonContent: text,
-                                                            project: json.project_id || prev.project,
-                                                            // Auto-fill provider if applicable
-                                                            provider: prev.provider || 'bigquery'
-                                                        }));
-                                                    } catch (err) {
-                                                        console.error("Invalid JSON file");
+                        {formData.provider === 'bigquery' ? (
+                            <>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                        <Label>Service Account JSON</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                type="file"
+                                                accept=".json"
+                                                className="hidden"
+                                                id="file-upload"
+                                                onChange={(e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onload = (ev) => {
+                                                            try {
+                                                                const text = ev.target?.result as string;
+                                                                const json = JSON.parse(text);
+                                                                setFormData(prev => ({
+                                                                    ...prev,
+                                                                    jsonContent: text,
+                                                                    project: json.project_id || prev.project,
+                                                                    provider: prev.provider || 'bigquery'
+                                                                }));
+                                                            } catch (err) {
+                                                                console.error("Invalid JSON file");
+                                                            }
+                                                        };
+                                                        reader.readAsText(file);
                                                     }
-                                                };
-                                                reader.readAsText(file);
-                                            }
+                                                }}
+                                            />
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-6 text-xs"
+                                                onClick={() => document.getElementById('file-upload')?.click()}
+                                            >
+                                                Upload Key File
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <Textarea
+                                        className="h-24 font-mono text-xs resize-none w-full max-w-full break-all"
+                                        placeholder='Paste contents or upload .json file...'
+                                        value={formData.jsonContent || ''}
+                                        onChange={e => {
+                                            const val = e.target.value;
+                                            setFormData(prev => ({ ...prev, jsonContent: val }));
+                                            try {
+                                                const json = JSON.parse(val);
+                                                if (json.project_id) {
+                                                    setFormData(prev => ({ ...prev, project: json.project_id }));
+                                                }
+                                            } catch { }
                                         }}
                                     />
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-6 text-xs"
-                                        onClick={() => document.getElementById('file-upload')?.click()}
-                                    >
-                                        Upload Key File
-                                    </Button>
+                                    <p className="text-[10px] text-muted-foreground">
+                                        Upload your service account key file. This will automatically populate the Project ID.
+                                    </p>
                                 </div>
-                            </div>
-                            <Textarea
-                                className="h-24 font-mono text-xs resize-none w-full max-w-full break-all"
-                                placeholder='Paste contents or upload .json file...'
-                                value={formData.jsonContent || ''}
-                                onChange={e => {
-                                    const val = e.target.value;
-                                    setFormData(prev => ({ ...prev, jsonContent: val }));
-                                    // Try to auto-extract project ID from paste
-                                    try {
-                                        const json = JSON.parse(val);
-                                        if (json.project_id) {
-                                            setFormData(prev => ({ ...prev, project: json.project_id }));
-                                        }
-                                    } catch { }
-                                }}
-                            />
-                            <p className="text-[10px] text-muted-foreground">
-                                Upload your service account key file. This will automatically populate the Project ID.
-                            </p>
-                        </div>
+                                <div className="space-y-2">
+                                    <Label>Project / Account ID</Label>
+                                    <Input
+                                        placeholder="gcp-project-id"
+                                        value={formData.project}
+                                        onChange={e => setFormData(prev => ({ ...prev, project: e.target.value }))}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Dataset ID</Label>
+                                    <Input
+                                        placeholder="e.g. clx_exec"
+                                        value={formData.dataset}
+                                        onChange={e => setFormData(prev => ({ ...prev, dataset: e.target.value }))}
+                                    />
+                                </div>
+                            </>
+                        ) : formData.provider === 'postgres' ? (
+                            <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Host <span className="text-red-500">*</span></Label>
+                                        <Input
+                                            placeholder="localhost"
+                                            value={formData.pgHost}
+                                            onChange={e => setFormData(prev => ({ ...prev, pgHost: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Port <span className="text-red-500">*</span></Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="5432"
+                                            value={formData.pgPort}
+                                            onChange={e => setFormData(prev => ({ ...prev, pgPort: parseInt(e.target.value) || 5432 }))}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Database Name <span className="text-red-500">*</span></Label>
+                                        <Input
+                                            placeholder="postgres"
+                                            value={formData.pgDatabase}
+                                            onChange={e => setFormData(prev => ({ ...prev, pgDatabase: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Username <span className="text-red-500">*</span></Label>
+                                        <Input
+                                            placeholder="postgres"
+                                            value={formData.pgUsername}
+                                            onChange={e => setFormData(prev => ({ ...prev, pgUsername: e.target.value }))}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>Password <span className="text-red-500">*</span></Label>
+                                    <Input
+                                        type="password"
+                                        placeholder="••••••••"
+                                        value={formData.pgPassword}
+                                        onChange={e => setFormData(prev => ({ ...prev, pgPassword: e.target.value }))}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>SSL Mode</Label>
+                                        <Select
+                                            value={formData.pgSslMode}
+                                            onValueChange={(v) => setFormData(prev => ({ ...prev, pgSslMode: v as any }))}
+                                        >
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="prefer" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="disable">Disable</SelectItem>
+                                                <SelectItem value="allow">Allow</SelectItem>
+                                                <SelectItem value="prefer">Prefer</SelectItem>
+                                                <SelectItem value="require">Require</SelectItem>
+                                                <SelectItem value="verify-ca">Verify CA</SelectItem>
+                                                <SelectItem value="verify-full">Verify Full</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Connection Timeout (seconds)</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="10"
+                                            value={formData.pgConnectionTimeout}
+                                            onChange={e => setFormData(prev => ({ ...prev, pgConnectionTimeout: parseInt(e.target.value) || 10 }))}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Schema (Optional)</Label>
+                                        <Input
+                                            placeholder="public"
+                                            value={formData.pgSchema}
+                                            onChange={e => setFormData(prev => ({ ...prev, pgSchema: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Connection Pool Size</Label>
+                                        <Input
+                                            type="number"
+                                            placeholder="10"
+                                            value={formData.pgPoolSize}
+                                            onChange={e => setFormData(prev => ({ ...prev, pgPoolSize: parseInt(e.target.value) || 10 }))}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="read-replica"
+                                        checked={formData.pgReadReplica}
+                                        onChange={e => setFormData(prev => ({ ...prev, pgReadReplica: e.target.checked }))}
+                                        className="h-4 w-4"
+                                    />
+                                    <Label htmlFor="read-replica" className="cursor-pointer">Enable Read Replica</Label>
+                                </div>
+                            </>
+                        ) : null}
+
                         <div className="space-y-2">
                             <Label>Display Name</Label>
                             <Input
-                                placeholder="Marketing Warehouse"
+                                placeholder="My Database Connection"
                                 value={formData.name}
                                 onChange={e => {
                                     const newName = e.target.value;
                                     setFormData(prev => ({
                                         ...prev,
                                         name: newName,
-                                        // Only auto-update ID if NOT in edit mode
                                         id: isEditMode ? prev.id : generateId(newName)
                                     }))
                                 }}
                             />
                         </div>
+
                         <div className="space-y-2">
                             <Label>Connector ID</Label>
                             <Input
                                 value={formData.id}
                                 onChange={e => setFormData(prev => ({ ...prev, id: e.target.value }))}
                                 className="font-mono text-xs"
-                                disabled={isEditMode} // Lock ID in edit mode
+                                disabled={isEditMode}
                             />
                             {isEditMode && <p className="text-[10px] text-muted-foreground">ID cannot be changed after creation.</p>}
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Project / Account ID</Label>
-                            <Input
-                                placeholder="gcp-project-id or snowflake-account"
-                                value={formData.project}
-                                onChange={e => setFormData(prev => ({ ...prev, project: e.target.value }))}
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Dataset ID</Label>
-                            <Input
-                                placeholder="e.g. clx_exec"
-                                value={formData.dataset}
-                                onChange={e => setFormData(prev => ({ ...prev, dataset: e.target.value }))}
-                            />
                         </div>
                     </div>
                 ) : (
@@ -301,10 +487,21 @@ export const ${formData.id ? formData.id.toUpperCase() : 'NEW_CONNECTOR'}: Conne
                 <DialogFooter>
                     {step === 'details' ? (
                         <div className="flex gap-2 justify-end w-full">
-                            <Button variant="ghost" onClick={() => setStep('code')} disabled={!formData.name || !formData.provider}>
+                            <Button 
+                                variant="ghost" 
+                                onClick={() => setStep('code')} 
+                                disabled={!formData.name || !formData.provider}
+                            >
                                 View Code
                             </Button>
-                            <Button onClick={handleCreate} disabled={!formData.name || !formData.provider}>
+                            <Button 
+                                onClick={handleCreate} 
+                                disabled={
+                                    !formData.name || !formData.provider || 
+                                    (formData.provider === 'bigquery' && (!formData.project || !formData.dataset || !formData.jsonContent)) ||
+                                    (formData.provider === 'postgres' && (!formData.pgHost || !formData.pgPort || !formData.pgDatabase || !formData.pgUsername || !formData.pgPassword))
+                                }
+                            >
                                 {isEditMode ? 'Save Changes' : 'Create Connection'}
                             </Button>
                         </div>
