@@ -55,11 +55,14 @@ A powerful banking analytics dashboard built with **Next.js 15**, **React 19**, 
 5.  Insert csv/excel data in postgresql table
 
 -   create a table in pgadmin
--   add columns with the same datatypes present in excel sheet run below command in your terminal
--   psql -U postgres -d test
-run the below command then
--   \copy public.banking(customer_id, customer_segment, total_accounts, checking_accounts, savings_accounts, credit_cards, loan_accounts,total_balance_usd, monthly_income_usd, monthly_expenses_usd, avg_monthly_card_spend_usd, avg_monthly_loan_payment_usd, digital_active,tenure_years, credit_score, risk_segment) FROM 'C:/Users/Manav/Downloads/customer_details.csv' WITH (FORMAT csv, HEADER, DELIMITER ',', QUOTE '"');
-
+-   add columns with the same datatypes present in excel sheet
+-   run below commands in your terminal
+``` bash
+psql -U postgres -d test
+```
+``` bash
+\copy public.banking(customer_id, customer_segment, total_accounts, checking_accounts, savings_accounts, credit_cards, loan_accounts,total_balance_usd, monthly_income_usd, monthly_expenses_usd, avg_monthly_card_spend_usd, avg_monthly_loan_payment_usd, digital_active,tenure_years, credit_score, risk_segment) FROM 'C:/Users/Manav/Downloads/customer_details.csv' WITH (FORMAT csv, HEADER, DELIMITER ',', QUOTE '"');
+```
 (change the location with the exact location the csv/excel file lies in your system)
 
 ## project structure
