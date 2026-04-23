@@ -33,6 +33,8 @@ A powerful banking analytics dashboard built with **Next.js 15**, **React 19**, 
     pnpm install
     # or
     yarn install
+    # or
+    npm install --legacy-peer-deps
     ```
 
 3.  Set up environment variables:
