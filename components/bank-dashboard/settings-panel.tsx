@@ -143,9 +143,25 @@ export function SettingsPanel() {
         </div >
     )
 }
-
 function CardMetricsSettings() {
-    const { showLabels, setShowLabels, showTrend, setShowTrend, showSubtext, setShowSubtext } = useCardSettings()
+    const { 
+        showLabels, setShowLabels, 
+        showTrend, setShowTrend, 
+        showSubtext, setShowSubtext,
+        showPersonaLabels, setShowPersonaLabels
+    } = useCardSettings()
+
+    const [isSaving, setIsSaving] = useState(false)
+    const [saved, setSaved] = useState(false)
+
+    const handleSave = () => {
+        setIsSaving(true)
+        setTimeout(() => {
+            setIsSaving(false)
+            setSaved(true)
+            setTimeout(() => setSaved(false), 2000)
+        }, 500)
+    }
 
     return (
         <Card>
@@ -155,10 +171,24 @@ function CardMetricsSettings() {
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="flex items-center justify-between space-x-2">
-                    <Label htmlFor="show-labels" className="flex flex-col space-y-1 text-left items-start">
-                        <span>Show Labels</span>
+                    <Label htmlFor="show-persona-labels" className="flex flex-col space-y-1 text-left items-start">
+                        <span>Show Persona Labels</span>
                         <span className="font-normal text-xs text-muted-foreground">
-                            Extract tags from titles and show as badges (e.g. "customer_finance Count" → Label: "Customer Finance").
+                            Display badges indicating which executive roles (CEO, CFO, etc.) this metric is assigned to.
+                        </span>
+                    </Label>
+                    <Switch
+                        id="show-persona-labels"
+                        checked={showPersonaLabels}
+                        onCheckedChange={setShowPersonaLabels}
+                    />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between space-x-2">
+                    <Label htmlFor="show-labels" className="flex flex-col space-y-1 text-left items-start">
+                        <span>Show Auto Labels</span>
+                        <span className="font-normal text-xs text-muted-foreground">
+                            Extract tags from titles and show as badges (e.g. "Customer Finance").
                         </span>
                     </Label>
                     <Switch
@@ -194,6 +224,22 @@ function CardMetricsSettings() {
                         checked={showSubtext}
                         onCheckedChange={setShowSubtext}
                     />
+                </div>
+                
+                <Separator />
+                <div className="pt-2 flex justify-end">
+                    <Button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="min-w-[120px]"
+                    >
+                        {isSaving ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : saved ? (
+                            <Check className="mr-2 h-4 w-4" />
+                        ) : null}
+                        {saved ? "Settings Saved" : "Save Settings"}
+                    </Button>
                 </div>
             </CardContent>
         </Card>

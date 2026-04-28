@@ -4,8 +4,8 @@ import { getDashboardOverview } from '@/lib/data-service/server';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { projectId, datasetId: datasetIdInput, connector } = body;
-
+        const { projectId, datasetId: datasetIdInput, connector, persona } = body;
+        
         let credentials = null;
         if (connector?.auth?.jsonContent) {
             try {
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'projectId and datasetId are required' }, { status: 400 });
         }
 
-        const data = await getDashboardOverview(projectId, resolvedDatasetId, credentials, connector);
+        const data = await getDashboardOverview(projectId, resolvedDatasetId, credentials, connector, persona);
         if (!data) return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
 
         return NextResponse.json(data);
@@ -32,14 +32,15 @@ export async function POST(request: Request) {
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId');
-    const datasetId = searchParams.get('datasetId'); // Support params
+    const datasetId = searchParams.get('datasetId');
+    const persona = searchParams.get('persona');
 
     if (!projectId || !datasetId) {
         return NextResponse.json({ error: 'projectId and datasetId required' }, { status: 400 });
     }
 
     try {
-        const data = await getDashboardOverview(projectId, datasetId);
+        const data = await getDashboardOverview(projectId, datasetId, null, null, persona);
         if (!data) {
             return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 });
         }

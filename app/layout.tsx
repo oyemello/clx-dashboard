@@ -4,6 +4,7 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ColorThemeProvider } from "@/components/color-theme-provider"
 import { CardSettingsProvider } from "@/components/card-settings-provider"
+import { PersonaProvider } from "@/components/persona-provider"
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -60,17 +61,19 @@ export default function RootLayout({
         >
           <ColorThemeProvider>
             <CardSettingsProvider>
-              <SidebarProvider>
-                <AppSidebar />
-                <SidebarInset>
+              <PersonaProvider>
+                <SidebarProvider>
+                  <AppSidebar />
+                  <SidebarInset>
 
                   <div className="flex flex-1 flex-col h-full max-h-screen w-full max-w-full overflow-hidden">
                     {children}
                   </div>
                 </SidebarInset>
               </SidebarProvider>
-            </CardSettingsProvider>
-          </ColorThemeProvider>
+            </PersonaProvider>
+          </CardSettingsProvider>
+        </ColorThemeProvider>
         </ThemeProvider>
         <Toaster />
         {process.env.NODE_ENV === "development" && (

@@ -13,7 +13,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { DateRange } from "react-day-picker"
-
+import { Card } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { SimplePersonaSelector } from "@/components/simple-persona-selector"
 
 
 interface DashboardShellProps {
@@ -21,6 +23,7 @@ interface DashboardShellProps {
 }
 
 export function DashboardShell({ }: DashboardShellProps) {
+    const [selectedPersona, setSelectedPersona] = useState<string | null>(null)
     const [activeConnector, setActiveConnector] = useState<ConnectorConfig | null>(null)
     const [config, setConfig] = useState<DashboardMetricConfig[]>([])
     const [metricData, setMetricData] = useState<Record<string, any[]>>({})
@@ -33,6 +36,7 @@ export function DashboardShell({ }: DashboardShellProps) {
     const [tempCompareDate, setTempCompareDate] = useState<DateRange | undefined>()
     const [isCalendarOpen, setIsCalendarOpen] = useState(false)
     const [isCompareOpen, setIsCompareOpen] = useState(false)
+    const [personaMapping, setPersonaMapping] = useState<Record<string, string[]>>({})
 
     // Sync temp state when opening compare popover
     useEffect(() => {
@@ -85,7 +89,68 @@ export function DashboardShell({ }: DashboardShellProps) {
         }
     }, [])
 
-    // 2. Sync Config with Connector Metrics
+    // Fetch persona mapping for connector metrics
+    useEffect(() => {
+        if (!activeConnector?.metrics || activeConnector.metrics.length === 0) {
+            setPersonaMapping({})
+            return
+        }
+
+        const fetchConnectorMappings = async () => {
+            try {
+                const res = await fetch('/api/metrics/connector-personas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ metrics: activeConnector.metrics })
+                })
+                const data = await res.json()
+                if (data.mapping) {
+                    console.log(`[DashboardShell] Loaded connector persona mapping:`, data.mapping);
+                    setPersonaMapping(data.mapping)
+                }
+            } catch (e) {
+                console.error("Failed to fetch connector persona mappings", e)
+            }
+        }
+
+        fetchConnectorMappings()
+    }, [activeConnector])
+
+
+
+    // Filter visibility based on selected persona
+    useEffect(() => {
+        if (!selectedPersona) {
+            // No persona - show all metrics
+            setConfig(prev => prev.map(c => ({ ...c, isVisible: true })))
+            return
+        }
+
+        // Only filter if we have the persona mapping loaded
+        if (Object.keys(personaMapping).length === 0) return
+
+        console.log(`[Persona Filter] Selected: ${selectedPersona}`);
+        console.log(`[Persona Filter] Mapping keys:`, Object.keys(personaMapping).slice(0, 10));
+        console.log(`[Persona Filter] Config metricIds:`, config.map(c => c.metricId).slice(0, 5));
+
+        // Show only metrics assigned to this persona
+        setConfig(prev => prev.map(c => {
+            const personasForMetric = personaMapping[c.metricId]
+            // Only show if metric has persona mapping AND selected persona is in the list
+            const isVisible = personasForMetric ? personasForMetric.includes(selectedPersona) : false
+            if (!isVisible && personasForMetric) {
+                console.log(`[Persona Filter] ${c.metricId} hidden for ${selectedPersona}. Allowed: ${personasForMetric.join(', ')}`);
+            } else if (!isVisible && !personasForMetric) {
+                console.log(`[Persona Filter] ${c.metricId} hidden - no persona mapping`);
+            }
+            return {
+                ...c,
+                isVisible
+            }
+        }))
+    }, [selectedPersona, personaMapping])
+
+    // 3. Sync Config with Connector Metrics
     useEffect(() => {
         if (!activeConnector?.metrics) {
             console.log("[DashboardShell] No metrics found in active connector:", activeConnector?.metadata?.name);
@@ -144,7 +209,8 @@ export function DashboardShell({ }: DashboardShellProps) {
                     metric: metricDef.id,
                     connector: activeConnector,
                     projectId: activeConnector.metadata.project,
-                    range: '24M' // Ensure enough history
+                    range: '24M', // Ensure enough history
+                    persona: selectedPersona
                 })
             }).then(res => res.json())
 
@@ -156,28 +222,23 @@ export function DashboardShell({ }: DashboardShellProps) {
                     metric: metricDef.id,
                     connector: activeConnector,
                     projectId: activeConnector.metadata.project,
-                    range: 'ALL' // Get everything to be safe for custom range
+                    range: 'ALL', // Get everything to be safe for custom range
+                    persona: selectedPersona
                 })
             }).then(res => res.json()) : Promise.resolve([])
 
             Promise.all([fetchPrimary, fetchCompare])
                 .then(([primaryData, comparisonData]) => {
-                    if (primaryData.error) console.error(primaryData.error)
+                    if (primaryData.error) {
+                        console.error(`Error fetching primary data for ${metricDef.id}:`, primaryData.error)
+                    }
 
-                    // Store both in a special structure or just merge?
-                    // Let's store primary as usual, but attach comparison data if needed
-                    // Actually, UniversalChart likely expects a single array.
-                    // We need to merge them if we are doing overlay.
-                    // But wait, the UNIVERSAL CHART needs `compareData` prop.
-                    // So we should store `compareData` separately in state?
+                    const safePrimary = Array.isArray(primaryData) ? primaryData : []
+                    const safeCompare = Array.isArray(comparisonData) ? comparisonData : []
 
-                    // Let's modify setMetricData to store { primary: [], compare: [] }? 
-                    // Or just keep metricData as Primary and add `comparisonMetricData` state.
-                    // Let's add specific state for comparison data.
-
-                    setMetricData(prev => ({ ...prev, [c.metricId]: primaryData }))
-                    if (comparisonData && !comparisonData.error) {
-                        setCompareMetricData(prev => ({ ...prev, [c.metricId]: comparisonData }))
+                    setMetricData(prev => ({ ...prev, [c.metricId]: safePrimary }))
+                    if (safeCompare.length > 0) {
+                        setCompareMetricData(prev => ({ ...prev, [c.metricId]: safeCompare }))
                     } else {
                         setCompareMetricData(prev => ({ ...prev, [c.metricId]: [] }))
                     }
@@ -187,7 +248,7 @@ export function DashboardShell({ }: DashboardShellProps) {
                     setLoadingMetrics(prev => ({ ...prev, [c.metricId]: false }))
                 })
         })
-    }, [activeConnector, config, compareDate]) // Add compareDate dependency
+    }, [activeConnector, config, compareDate, selectedPersona]) // Add selectedPersona dependency
 
     const visibleConfigs = config.filter(c => c.isVisible && activeConnector?.metrics?.find(m => m.id === c.metricId))
 
@@ -266,9 +327,14 @@ export function DashboardShell({ }: DashboardShellProps) {
         : []
 
     return (
-        <div className="grid h-full w-full max-w-full bg-slate-50/50 overflow-hidden p-2 gap-2 grid-rows-[auto_1fr]">
-            <div className="min-h-0 no-scrollbar overflow-x-auto overflow-y-hidden p-[1px]">
-                {visibleConfigs.length > 0 ? (
+        <div className="flex flex-col h-full bg-slate-50/50">
+            <div className="flex items-center justify-between px-4 py-2 border-b">
+                <h1 className="text-2xl font-bold">Executive Dashboard</h1>
+                <SimplePersonaSelector selectedPersona={selectedPersona} onPersonaChange={setSelectedPersona} />
+            </div>
+            <div className="grid flex-1 w-full max-w-full overflow-hidden p-2 gap-2 grid-rows-[auto_1fr]">
+                <div className="min-h-0 no-scrollbar overflow-x-auto overflow-y-hidden p-[1px]">
+                    {visibleConfigs.length > 0 ? (
                     <div className="grid grid-rows-2 grid-flow-col auto-cols-[minmax(260px,1fr)] gap-2 min-h-full auto-rows-[minmax(0,1fr)]">
                         {visibleConfigs.map(c => {
                             const metric = activeConnector.metrics?.find(m => m.id === c.metricId)!
@@ -278,6 +344,7 @@ export function DashboardShell({ }: DashboardShellProps) {
                                         metric={metric}
                                         title={c.customTitle}
                                         data={metricData[c.metricId] || []}
+                                        personas={personaMapping[c.metricId]}
                                         loading={loadingMetrics[c.metricId]}
                                         selected={selectedMetricId === c.metricId}
                                         onClick={() => setSelectedMetricId(c.metricId)}
@@ -293,16 +360,16 @@ export function DashboardShell({ }: DashboardShellProps) {
                     </div>
                 )}
             </div>
-            {selectedMetricId && selectedConfig && selectedMetricDef && (
+            {(false || (selectedMetricId && selectedConfig && selectedMetricDef)) && (
                 <div className="flex-1 min-h-0 flex flex-col space-y-4">
                     <div className="flex-1 min-h-0">
                         <UniversalChart
-                            title={selectedConfig.customTitle || selectedMetricDef.label}
-                            type={selectedConfig.visualizationType}
+                            title={false ? "Loading..." : (selectedConfig?.customTitle || selectedMetricDef?.label || "")}
+                            type={selectedConfig?.visualizationType || "line"}
                             data={filteredMetricData}
                             compareData={filteredCompareData}
-                            metricId={selectedMetricId}
-                            loading={loadingMetrics[selectedMetricId]}
+                            metricId={selectedMetricId || ""}
+                            loading={false || loadingMetrics[selectedMetricId || ""]}
                             headerContent={
                                 <div className="flex items-center">
                                     <Tabs value={timeRange} onValueChange={setTimeRange}>
@@ -429,8 +496,8 @@ export function DashboardShell({ }: DashboardShellProps) {
                         />
                     </div>
                 </div>
-            )
-            }
-        </div >
+            )}
+            </div>
+        </div>
     )
 }

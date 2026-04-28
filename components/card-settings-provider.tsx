@@ -8,12 +8,14 @@ type CardSettings = {
     showLabels: boolean
     showTrend: boolean
     showSubtext: boolean
+    showPersonaLabels: boolean
 }
 
 type CardSettingsContextType = CardSettings & {
     setShowLabels: (value: boolean) => void
     setShowTrend: (value: boolean) => void
     setShowSubtext: (value: boolean) => void
+    setShowPersonaLabels: (value: boolean) => void
 }
 
 const CardSettingsContext = React.createContext<CardSettingsContextType | undefined>(undefined)
@@ -23,6 +25,7 @@ export function CardSettingsProvider({ children }: { children: React.ReactNode }
         showLabels: true,
         showTrend: true,
         showSubtext: true,
+        showPersonaLabels: true,
     })
 
     const [mounted, setMounted] = React.useState(false)
@@ -52,6 +55,7 @@ export function CardSettingsProvider({ children }: { children: React.ReactNode }
         setShowLabels: (val: boolean) => setSettings(s => ({ ...s, showLabels: val })),
         setShowTrend: (val: boolean) => setSettings(s => ({ ...s, showTrend: val })),
         setShowSubtext: (val: boolean) => setSettings(s => ({ ...s, showSubtext: val })),
+        setShowPersonaLabels: (val: boolean) => setSettings(s => ({ ...s, showPersonaLabels: val })),
     }), [settings])
 
     // Prevent hydration mismatch by returning children immediately if not mounted?

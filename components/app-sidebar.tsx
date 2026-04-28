@@ -26,6 +26,7 @@ import {
     SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { PersonaSelector } from "@/components/persona-selector"
 
 // Simplified data
 const data = {
@@ -82,7 +83,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         </SidebarMenuItem>
                     ))}
                 </SidebarMenu>
-                <div className="mt-auto">
+                <div className="mt-auto flex flex-col gap-2">
+                    <PersonaSelector />
                     <SidebarMenu>
                         <SidebarMenuItem>
                             <SidebarMenuButton tooltip="Settings" isActive={pathname === "/settings"} asChild>

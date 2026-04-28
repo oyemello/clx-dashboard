@@ -6,19 +6,27 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { useCardSettings } from "@/components/card-settings-provider"
 import { extractLabels } from "@/lib/label-utils"
+import * as React from "react"
 
 interface KPICardProps {
     metric: MetricDefinition;
     title?: string;
     data: any[];
+    personas?: string[];
     loading?: boolean;
     selected?: boolean;
     onClick?: () => void;
     className?: string;
 }
 
-export function KPICard({ metric, title, data, loading, selected, onClick, className }: KPICardProps) {
-    const { showLabels, showTrend, showSubtext } = useCardSettings()
+export function KPICard({ metric, title, data, personas, loading, selected, onClick, className }: KPICardProps) {
+    const { showLabels, showTrend, showSubtext, showPersonaLabels } = useCardSettings()
+
+    React.useEffect(() => {
+        if (personas && personas.length > 0) {
+            console.log(`[KPICard] ${metric.id} personas:`, personas);
+        }
+    }, [personas, metric.id])
 
     if (loading) {
         return (
@@ -65,15 +73,20 @@ export function KPICard({ metric, title, data, loading, selected, onClick, class
             )}
             onClick={onClick}
         >
-            <div className="flex flex-col items-start gap-1.5">
+            <div className="flex flex-col items-start gap-1.5 w-full">
                 <div className="text-sm font-medium text-muted-foreground truncate w-full min-h-[20px]" title={displayTitle}>
                     {displayTitle}
                 </div>
-                {showLabels && labels.length > 0 && (
+                {(showLabels || showPersonaLabels) && (
                     <div className="flex flex-wrap gap-1">
-                        {labels.map((lbl, i) => (
+                        {showLabels && labels.map((lbl, i) => (
                             <Badge key={i} variant="outline" className="px-1.5 py-0 text-[10px] uppercase tracking-wider font-semibold bg-white text-gray-500 hover:bg-white border-border opacity-100">
                                 {lbl}
+                            </Badge>
+                        ))}
+                        {showPersonaLabels && personas && personas.length > 0 && personas.map((p, i) => (
+                            <Badge key={`p-${i}`} variant="secondary" className="px-1.5 py-0 text-[9px] uppercase tracking-tight font-bold bg-indigo-50 text-indigo-600 border-indigo-100 hover:bg-indigo-50">
+                                {p.split(' ')[0]}
                             </Badge>
                         ))}
                     </div>

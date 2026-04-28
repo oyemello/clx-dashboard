@@ -4,7 +4,7 @@ import { getMetricTimeseries } from '@/lib/data-service/server';
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { metric, range, connectorId, projectId, datasetId: datasetIdInput, connector } = body;
+        const { metric, range, connectorId, projectId, datasetId: datasetIdInput, connector, persona } = body;
 
         let credentials = null;
         if (connector?.auth?.jsonContent) {
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'projectId and datasetId are required' }, { status: 400 });
         }
 
-        const data = await getMetricTimeseries(metric, range || 'ALL', connectorId, projectId, resolvedDatasetId, credentials, connector);
+        const data = await getMetricTimeseries(metric, range || 'ALL', connectorId, projectId, resolvedDatasetId, credentials, connector, persona);
         return NextResponse.json(data);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
@@ -34,13 +34,14 @@ export async function GET(request: Request) {
     const connectorId = searchParams.get('connectorId');
     const projectId = searchParams.get('projectId');
     const datasetId = searchParams.get('datasetId');
+    const persona = searchParams.get('persona');
 
     if ((!connectorId && !projectId) || !metric || !datasetId) {
         return NextResponse.json({ error: 'metric, projectId (or connectorId), and datasetId are required' }, { status: 400 });
     }
 
     try {
-        const data = await getMetricTimeseries(metric, range, connectorId, projectId, datasetId);
+        const data = await getMetricTimeseries(metric, range, connectorId, projectId, datasetId, null, null, persona);
         return NextResponse.json(data);
     } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });

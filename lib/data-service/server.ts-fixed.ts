@@ -2,7 +2,6 @@ import { getBigQueryClient } from '@/lib/bigquery/client';
 import { getConnector } from '@/lib/connectors/registry';
 import fs from 'fs';
 import path from 'path';
-import { CLX_WAREHOUSE_PRIMARY } from '@/lib/connectors/instances/clx-warehouse-primary';
 
 /**
  * Shared Helpers for BigQuery Query Construction
@@ -60,29 +59,6 @@ const pickColumn = (tableMeta: any, patterns: RegExp[], opts?: { allowFallback?:
     return schema[0]?.name || null;
 };
 
-const PERSONA_KPI_MAPPING: Record<string, string> = {
-    'arpu': 'Average Revenue per User/Card (ARPU)',
-    'cac': 'Customer Acquisition Cost (CAC)',
-    'clv': 'Customer Lifetime Value (CLV)',
-    'nps': 'Net Promoter Score (NPS)',
-    'digital_adoption': 'Digital Adoption Rate',
-    'delinquency': 'Delinquency Rate',
-    'retention': 'Customer Retention Rate',
-    'revenue_growth': 'Revenue Growth Rate',
-    'margin': 'Net Profit Margin',
-    'ebitda': 'EBITDA Margin',
-    'eps': 'Earnings Per Share (EPS)',
-    'roic': 'Return on Invested Capital (ROIC)',
-    'free_cash_flow': 'Free Cash Flow',
-    'operating_cash_flow': 'Operating Cash Flow',
-    'cost_to_income': 'Cost-to-Income Ratio',
-    'net_interest_margin': 'Net Interest Margin',
-    'provision_losses': 'Provision for Credit Losses',
-    'net_charge_off': 'Net Charge-Off Rate',
-    'employee_engagement': 'Employee Engagement Score',
-    'voluntary_attrition': 'Voluntary Attrition Rate'
-};
-
 export async function getDashboardOverview(projectId?: string, datasetId?: string | null, credentials?: any, connector?: any, persona?: string | null) {
     if (!projectId && connector?.metadata?.project) {
         projectId = connector.metadata.project;
@@ -103,6 +79,7 @@ export async function getDashboardOverview(projectId?: string, datasetId?: strin
         credentials
     });
 
+    // Resolve tables using the shared helper
     const customersTable = selectTable(connector, effectiveDatasetId, ['customer', 'customers', 'user', 'users', 'client', 'clients', 'profile', 'profiles'], 'customers');
     const accountsTable = selectTable(connector, effectiveDatasetId, ['account', 'accounts', 'wallet', 'wallets', 'holding', 'holdings'], 'accounts');
     const transactionsTable = selectTable(connector, effectiveDatasetId, ['transaction', 'transactions', 'txn', 'order', 'orders', 'sale', 'sales', 'payment', 'payments', 'purchase', 'purchases'], 'transactions');
@@ -182,8 +159,12 @@ export async function getDashboardOverview(projectId?: string, datasetId?: strin
 
     const query = `
         WITH 
-        counts AS ( SELECT ${countsSelects.join(', ')} ),
-        snapshots AS ( SELECT ${snapshotsSelects.join(', ')} )
+        counts AS (
+            SELECT ${countsSelects.join(', ')}
+        ),
+        snapshots AS (
+            SELECT ${snapshotsSelects.join(', ')}
+        )
         SELECT * FROM counts, snapshots
     `;
 
@@ -217,76 +198,4 @@ export async function getDashboardOverview(projectId?: string, datasetId?: strin
         console.error("Dashboard overview query failed", e);
         throw new Error(`Overview query failed: ${e.message}`);
     }
-}
-
-export async function getMetricTimeseries(metricId: string, range: string, connectorId?: string | null, projectId?: string | null, datasetId?: string | null, credentials?: any, inlineConnector?: any, persona?: string | null) {
-    let metricDef;
-    let effectiveProjectId = projectId;
-    let connector = connectorId ? getConnector(connectorId) : (inlineConnector || undefined);
-
-    if (connector?.metadata?.project) effectiveProjectId = connector.metadata.project;
-    if (!metricDef && connector?.metrics) metricDef = connector.metrics.find((m: any) => m.id === metricId);
-    if (!metricDef && effectiveProjectId) metricDef = CLX_WAREHOUSE_PRIMARY.metrics?.find(m => m.id === metricId);
-    if (!effectiveProjectId) effectiveProjectId = process.env.GOOGLE_CLOUD_PROJECT || 'bankingmetrics';
-
-    const client = getBigQueryClient({ projectId: effectiveProjectId, credentials });
-
-    const personaKpiName = PERSONA_KPI_MAPPING[metricId];
-    if (persona && personaKpiName) {
-        try {
-            const query = `
-                SELECT period as date, AVG(actual_value) as value
-                FROM \`banking.kpi_persona\`
-                WHERE persona = @persona AND kpi_name = @kpiName
-                GROUP BY 1 ORDER BY 1
-            `;
-            const [rows] = await client.query({ query, params: { persona, kpiName: personaKpiName } });
-            if (rows.length > 0) return rows.map((r: any) => ({ date: r.date, value: Number(r.value) }));
-            // Fall through to regular metric query if no persona data found
-        } catch (e) {
-            // Fall through to regular metric query on error
-        }
-    }
-
-    if (!metricDef) return [];
-    const datasetName = datasetId || connector?.discovery?.datasets?.[0]?.id || connector?.sources?.[0]?.id;
-    let fullTableName = metricDef.table;
-    if (!fullTableName.includes('.')) {
-        if (!datasetName) throw new Error("Dataset ID required");
-        fullTableName = `${datasetName}.${fullTableName}`;
-    }
-
-    let lookbackDays = 90;
-    if (range === '3M') lookbackDays = 90;
-    else if (range === '6M') lookbackDays = 180;
-    else if (range === '1Y') lookbackDays = 365;
-    else if (range === 'ALL') lookbackDays = 3650;
-
-    let tableMeta: any = null;
-    try {
-        const [meta] = await client.dataset(datasetName!).table(metricDef.table).getMetadata();
-        tableMeta = meta;
-    } catch (e) { }
-
-    const personaFilterStr = (() => {
-        if (!persona || !tableMeta) return '';
-        const directCol = pickColumn(tableMeta, [/persona/], { allowFallback: false });
-        if (directCol) return ` AND \`${directCol}\` = @persona`;
-        const custId = pickColumn(tableMeta, [/customer.*id/, /cust.*id/], { allowFallback: false });
-        if (custId) {
-            return ` AND CAST(\`${custId}\` AS STRING) IN (SELECT DISTINCT CAST(customer_id AS STRING) FROM \`banking.kpi_persona\` WHERE persona = @persona)`;
-        }
-        return '';
-    })();
-
-    const query = metricDef.isTimeseries && metricDef.dateColumn 
-        ? `SELECT FORMAT_DATE('%Y-%m-%d', DATE(${metricDef.dateColumn})) as date, ${metricDef.sql} as value FROM \`${fullTableName}\` WHERE ${metricDef.dateColumn} >= DATE_SUB(CURRENT_DATE(), INTERVAL ${lookbackDays} DAY) ${personaFilterStr} GROUP BY 1 ORDER BY 1`
-        : `SELECT FORMAT_DATE('%Y-%m-%d', CURRENT_DATE()) as date, ${metricDef.sql} as value FROM \`${fullTableName}\` WHERE 1=1 ${personaFilterStr}`;
-
-    try {
-        const queryParams: any = {};
-        if (persona) queryParams.persona = persona;
-        const [rows] = await client.query({ query, params: queryParams });
-        return rows.map((r: any) => ({ date: r.date, value: r.value }));
-    } catch (e: any) { throw new Error(`Query failed: ${e.message}`); }
 }
