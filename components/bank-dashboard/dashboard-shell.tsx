@@ -87,8 +87,12 @@ export function DashboardShell({ }: DashboardShellProps) {
 
     // 2. Sync Config with Connector Metrics
     useEffect(() => {
-        if (!activeConnector?.metrics) return
+        if (!activeConnector?.metrics) {
+            console.log("[DashboardShell] No metrics found in active connector:", activeConnector?.metadata?.name);
+            return
+        }
 
+        console.log(`[DashboardShell] Syncing ${activeConnector.metrics.length} metrics for ${activeConnector.metadata.name}`);
         setConfig(prev => {
             const newConfig = [...prev]
             let changed = false

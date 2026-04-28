@@ -44,25 +44,45 @@ export async function POST(request: Request) {
             return NextResponse.json({ ok: false, error: 'Missing connector config' }, { status: 400 })
         }
 
+        // Handle Simulation Provider or Project (Mock/Sample Data)
+        if (connector.metadata?.provider === 'simulation' || connector.metadata?.project === 'clx-simulation') {
+            return NextResponse.json({
+                ok: true,
+                projectId: connector.metadata?.project || 'simulation',
+                hasCredentials: true,
+                isEnvAuth: false,
+                location: connector.metadata?.defaultLocation || 'US',
+                isSimulation: true
+            })
+        }
+
         const { credentials, projectId } = parseConnector(connector)
         if (!projectId) {
             return NextResponse.json({ ok: false, error: 'Project ID is required', isConfigError: true }, { status: 400 })
         }
 
+        const location = connector?.metadata?.defaultLocation || 'US'
+
         const client = getBigQueryClient({
             projectId,
             credentials,
+            location
         })
 
         await client.query('SELECT 1')
 
+        // Check if we are using environment-based auth (no dynamic credentials provided)
+        const isEnvAuth = !credentials && (!!process.env.GOOGLE_SERVICE_ACCOUNT_JSON || !!process.env.GOOGLE_APPLICATION_CREDENTIALS)
+
         return NextResponse.json({
             ok: true,
             projectId,
-            hasCredentials: !!credentials,
-            location: connector?.metadata?.defaultLocation || 'US',
+            hasCredentials: !!credentials || isEnvAuth,
+            isEnvAuth,
+            location,
         })
     } catch (error: any) {
+        console.error('BigQuery Test Error:', error)
         return NextResponse.json(
             {
                 ok: false,

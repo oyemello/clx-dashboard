@@ -9,11 +9,12 @@ if (typeof window !== 'undefined') {
 export class BigQueryService {
     private client: BigQuery;
 
-    constructor(projectId?: string) {
+    constructor(projectId?: string, location?: string) {
         // Relies on GOOGLE_APPLICATION_CREDENTIALS for auth
         // and GOOGLE_CLOUD_PROJECT if projectId not supplied
         this.client = new BigQuery({
             projectId: projectId || process.env.GOOGLE_CLOUD_PROJECT,
+            location: location || process.env.BIGQUERY_LOCATION || 'US'
         });
     }
 

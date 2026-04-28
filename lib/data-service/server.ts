@@ -1,7 +1,28 @@
 import { getBigQueryClient } from '@/lib/bigquery/client';
 import { getConnector } from '@/lib/connectors/registry';
+import fs from 'fs';
+import path from 'path';
+
+function getSimulationData(personaId: string = 'ceo') {
+    try {
+        const filePath = path.join(process.cwd(), 'data/persona_kpis_high_volume.json');
+        if (!fs.existsSync(filePath)) {
+            // Fallback to low volume if high volume not yet ready or deleted
+            const lowVolPath = path.join(process.cwd(), 'data/persona_kpis.json');
+            if (fs.existsSync(lowVolPath)) {
+                return JSON.parse(fs.readFileSync(lowVolPath, 'utf8'));
+            }
+            return null;
+        }
+        return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    } catch (e) {
+        console.error("Failed to read simulation data", e);
+        return null;
+    }
+}
 
 export async function getDashboardOverview(projectId?: string, datasetId?: string | null, credentials?: any, connector?: any) {
+    console.log(`[getDashboardOverview] projectId=${projectId} datasetId=${datasetId} provider=${connector?.metadata?.provider}`);
     if (!projectId && connector?.metadata?.project) {
         projectId = connector.metadata.project;
     }
@@ -197,7 +218,13 @@ export async function getMetricTimeseries(metricId: string, range: string, conne
         connector = inlineConnector;
     }
 
-    // 1. Try to load from Registered Connector
+    // 1. Simulation Provider Logic
+    // 1. Resolve Effective Project ID
+    if (!effectiveProjectId && connector?.metadata?.project) {
+        effectiveProjectId = connector.metadata.project;
+    }
+
+    // 2. Try to load from Registered Connector
     if (connector) {
         metricDef = connector.metrics?.find(m => m.id === metricId);
         // If connector has a project, it overrides the passed projectId
@@ -226,6 +253,7 @@ export async function getMetricTimeseries(metricId: string, range: string, conne
         return [];
     }
 
+    console.log(`[getMetricTimeseries] metricId=${metricId} projectId=${effectiveProjectId}`);
     if (!effectiveProjectId) throw new Error("No Project ID determined for query");
 
     const client = getBigQueryClient({

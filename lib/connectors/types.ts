@@ -1,4 +1,4 @@
-export type ConnectorProvider = 'bigquery' | 'snowflake' | 'redshift' | 'postgres';
+export type ConnectorProvider = 'bigquery' | 'snowflake' | 'redshift' | 'postgres' | 'simulation';
 
 export type Environment = 'dev' | 'staging' | 'prod';
 

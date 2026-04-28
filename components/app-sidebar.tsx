@@ -8,6 +8,7 @@ import {
     Database,
     SlidersHorizontal,
     LineChart,
+    BarChart2,
 } from "lucide-react"
 
 import { usePathname } from "next/navigation"
@@ -54,6 +55,11 @@ const data = {
             title: "Insights",
             url: "/insights",
             icon: LineChart,
+        },
+        {
+            title: "Chart Studio",
+            url: "/charts",
+            icon: BarChart2,
         }
     ],
 }

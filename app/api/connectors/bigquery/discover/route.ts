@@ -115,6 +115,7 @@ export async function POST(request: Request) {
 
         return NextResponse.json(discovery)
     } catch (error: any) {
+        console.error("[Discovery] Global Error:", error);
         return NextResponse.json({ error: error?.message || 'Discovery failed' }, { status: 500 })
     }
 }

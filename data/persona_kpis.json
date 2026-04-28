@@ -1,0 +1,307 @@
+{
+  "organization": {
+    "name": "Sample Bank Corp",
+    "industry": "Banking / Card Issuer",
+    "period": "Q1 2026"
+  },
+  "personas": [
+    {
+      "id": "ceo",
+      "title": "Chief Executive Officer",
+      "primaryObjectives": [
+        "Profitable growth",
+        "Market share",
+        "Customer loyalty"
+      ],
+      "kpis": [
+        {
+          "name": "Revenue Growth Rate",
+          "description": "Measures year-over-year growth in total revenue from card and banking products.",
+          "formula": "(Current period revenue - Prior period revenue) / Prior period revenue",
+          "unit": "%",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["ceo", "cfo"],
+          "targets": { "targetValue": 8.0, "warningThreshold": 4.0, "criticalThreshold": 1.0 },
+          "sampleDataPoints": [
+            { "period": "2025-Q3", "actualValue": 5.2, "status": "watch" },
+            { "period": "2025-Q4", "actualValue": 7.9, "status": "on_track" },
+            { "period": "2026-Q1", "actualValue": 8.4, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Net Profit Margin",
+          "description": "Percentage of revenue remaining after all operating expenses, taxes, and interest.",
+          "formula": "Net Income / Total Revenue",
+          "unit": "%",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["ceo", "cfo"],
+          "targets": { "targetValue": 22.0, "warningThreshold": 18.0, "criticalThreshold": 15.0 },
+          "sampleDataPoints": [
+            { "period": "2025-Q3", "actualValue": 21.1, "status": "on_track" },
+            { "period": "2026-Q1", "actualValue": 22.4, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Return on Invested Capital (ROIC)",
+          "description": "Measures how efficiently the bank uses its capital to generate profits.",
+          "formula": "Net Operating Profit After Tax / Invested Capital",
+          "unit": "%",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["ceo", "cfo"],
+          "targets": { "targetValue": 15.0, "warningThreshold": 12.0, "criticalThreshold": 10.0 },
+          "sampleDataPoints": [
+            { "period": "2025-Q3", "actualValue": 14.2, "status": "on_track" },
+            { "period": "2026-Q1", "actualValue": 15.1, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Earnings Per Share (EPS)",
+          "description": "Portion of profit allocated to each outstanding share of common stock.",
+          "formula": "Net Income / Average Outstanding Shares",
+          "unit": "USD",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["ceo", "cfo"],
+          "targets": { "targetValue": 3.4, "warningThreshold": 3.1, "criticalThreshold": 2.8 },
+          "sampleDataPoints": [
+            { "period": "2025-Q3", "actualValue": 3.15, "status": "on_track" },
+            { "period": "2026-Q1", "actualValue": 3.42, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Average Revenue per User/Card (ARPU)",
+          "description": "The average amount of revenue generated per active cardholder.",
+          "formula": "Total Card Revenue / Number of Active Cards",
+          "unit": "USD",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["cmo", "ceo"],
+          "targets": { "targetValue": 450, "warningThreshold": 400, "criticalThreshold": 350 },
+          "sampleDataPoints": [
+            { "period": "2025-Q4", "actualValue": 438, "status": "on_track" },
+            { "period": "2026-Q1", "actualValue": 455, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Net Promoter Score (NPS)",
+          "description": "Measures customer experience and predicts business growth.",
+          "formula": "% Promoters - % Detractors",
+          "unit": "index",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["ceo", "cmo"],
+          "targets": { "targetValue": 65, "warningThreshold": 55, "criticalThreshold": 45 },
+          "sampleDataPoints": [
+            { "period": "2025-Q4", "actualValue": 61, "status": "on_track" },
+            { "period": "2026-Q1", "actualValue": 63, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Digital Adoption Rate",
+          "description": "Percentage of customers regularly using digital banking channels.",
+          "formula": "Active Digital Users / Total Active Users",
+          "unit": "%",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["cio_cdo", "ceo"],
+          "targets": { "targetValue": 85.0, "warningThreshold": 75.0, "criticalThreshold": 65.0 },
+          "sampleDataPoints": [
+            { "period": "2025-Q4", "actualValue": 81.2, "status": "on_track" },
+            { "period": "2026-Q1", "actualValue": 83.5, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Employee Engagement Score",
+          "description": "Internal survey score measuring overall employee satisfaction.",
+          "formula": "Sum of survey responses / Max possible score",
+          "unit": "index",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["chro", "ceo"],
+          "targets": { "targetValue": 78, "warningThreshold": 72, "criticalThreshold": 65 },
+          "sampleDataPoints": [
+            { "period": "2025-Q4", "actualValue": 75, "status": "on_track" },
+            { "period": "2026-Q1", "actualValue": 76, "status": "on_track" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cfo",
+      "title": "Chief Financial Officer",
+      "primaryObjectives": ["Capital efficiency", "Expense management", "Liquidity"],
+      "kpis": [
+        {
+          "name": "EBITDA Margin",
+          "description": "Earnings before interest, taxes, depreciation, and amortization as a percentage of revenue.",
+          "formula": "EBITDA / Total Revenue",
+          "unit": "%",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["cfo"],
+          "targets": { "targetValue": 35.0, "warningThreshold": 32.0, "criticalThreshold": 28.0 },
+          "sampleDataPoints": [
+            { "period": "2025-Q4", "actualValue": 33.1, "status": "on_track" },
+            { "period": "2026-Q1", "actualValue": 35.5, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Operating Cash Flow",
+          "description": "Net cash provided by the bank's core business activities.",
+          "formula": "Net Income + Non-cash expenses + Changes in Working Capital",
+          "unit": "USD",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["cfo", "coo"],
+          "targets": { "targetValue": 1.2e9, "warningThreshold": 1.0e9, "criticalThreshold": 0.8e9 },
+          "sampleDataPoints": [
+            { "period": "2025-Q4", "actualValue": 1.32e9, "status": "on_track" },
+            { "period": "2026-Q1", "actualValue": 1.24e9, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Free Cash Flow",
+          "description": "Cash available for discretionary spending after capital expenditures.",
+          "formula": "Operating Cash Flow - Capital Expenditures",
+          "unit": "USD",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["cfo"],
+          "targets": { "targetValue": 9.5e8, "warningThreshold": 8.0e8, "criticalThreshold": 6.0e8 },
+          "sampleDataPoints": [
+            { "period": "2026-Q1", "actualValue": 9.7e8, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Cost-to-Income Ratio",
+          "description": "Operating expenses divided by operating income.",
+          "formula": "Operating Expenses / Operating Income",
+          "unit": "%",
+          "direction": "lower_is_better",
+          "ownerPersonas": ["cfo", "coo"],
+          "targets": { "targetValue": 42.0, "warningThreshold": 45.0, "criticalThreshold": 50.0 },
+          "sampleDataPoints": [
+            { "period": "2026-Q1", "actualValue": 41.8, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Net Interest Margin",
+          "description": "Difference between interest income and interest paid.",
+          "formula": "Net Interest Income / Average Earning Assets",
+          "unit": "%",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["cfo"],
+          "targets": { "targetValue": 3.8, "warningThreshold": 3.4, "criticalThreshold": 3.0 },
+          "sampleDataPoints": [
+            { "period": "2026-Q1", "actualValue": 3.78, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Provision for Credit Losses",
+          "description": "Estimated amount to cover potential defaults.",
+          "unit": "USD",
+          "direction": "lower_is_better",
+          "ownerPersonas": ["cfo", "cro"],
+          "targets": { "targetValue": 1.5e8, "warningThreshold": 1.8e8, "criticalThreshold": 2.2e8 },
+          "sampleDataPoints": [
+            { "period": "2026-Q1", "actualValue": 1.45e8, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Net Charge-Off Rate",
+          "description": "Percentage of loans written off as uncollectible.",
+          "formula": "Charge-offs - Recoveries / Average Loans",
+          "unit": "%",
+          "direction": "lower_is_better",
+          "ownerPersonas": ["cfo", "cro"],
+          "targets": { "targetValue": 2.2, "warningThreshold": 2.8, "criticalThreshold": 3.5 },
+          "sampleDataPoints": [
+            { "period": "2026-Q1", "actualValue": 2.18, "status": "on_track" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cro",
+      "title": "Chief Risk Officer",
+      "primaryObjectives": ["Portfolio quality", "Loss mitigation", "Compliance"],
+      "kpis": [
+        {
+          "name": "Delinquency Rate",
+          "description": "Percentage of accounts 30+ days late.",
+          "formula": "Delinquent Accounts / Total Accounts",
+          "unit": "%",
+          "direction": "lower_is_better",
+          "ownerPersonas": ["cro"],
+          "targets": { "targetValue": 1.5, "warningThreshold": 2.0, "criticalThreshold": 3.0 },
+          "sampleDataPoints": [
+            { "period": "2026-Q1", "actualValue": 1.55, "status": "on_track" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cmo",
+      "title": "Chief Marketing Officer",
+      "primaryObjectives": ["Brand growth", "Acquisition", "Retention"],
+      "kpis": [
+        {
+          "name": "Customer Acquisition Cost (CAC)",
+          "description": "Total marketing spend per new account.",
+          "formula": "Marketing Spend / New Customers",
+          "unit": "USD",
+          "direction": "lower_is_better",
+          "ownerPersonas": ["cmo"],
+          "targets": { "targetValue": 180, "warningThreshold": 220, "criticalThreshold": 280 },
+          "sampleDataPoints": [
+            { "period": "2026-Q1", "actualValue": 185, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Customer Lifetime Value (CLV)",
+          "description": "Predicted revenue from a single customer.",
+          "unit": "USD",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["cmo"],
+          "targets": { "targetValue": 4500, "warningThreshold": 3800, "criticalThreshold": 3000 },
+          "sampleDataPoints": [
+            { "period": "2026-Q1", "actualValue": 4480, "status": "on_track" }
+          ]
+        },
+        {
+          "name": "Customer Retention Rate",
+          "description": "Percentage of customers who remain active.",
+          "unit": "%",
+          "direction": "higher_is_better",
+          "ownerPersonas": ["cmo"],
+          "targets": { "targetValue": 92.0, "warningThreshold": 88.0, "criticalThreshold": 85.0 },
+          "sampleDataPoints": [
+            { "period": "2026-Q1", "actualValue": 92.3, "status": "on_track" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "coo",
+      "title": "Chief Operating Officer",
+      "primaryObjectives": ["Efficiency", "Resiliency"],
+      "kpis": []
+    },
+    {
+      "id": "cio_cdo",
+      "title": "CIO/CDO (Technology & Digital)",
+      "primaryObjectives": ["Innovation", "Resiliency"],
+      "kpis": []
+    },
+    {
+      "id": "chro",
+      "title": "Chief HR Officer",
+      "primaryObjectives": ["Talent", "Culture"],
+      "kpis": [
+        {
+          "name": "Voluntary Attrition Rate",
+          "description": "Percentage of workforce leaving voluntarily.",
+          "unit": "%",
+          "direction": "lower_is_better",
+          "ownerPersonas": ["chro"],
+          "targets": { "targetValue": 8.0, "warningThreshold": 12.0, "criticalThreshold": 15.0 },
+          "sampleDataPoints": [
+            { "period": "2026-Q1", "actualValue": 9.1, "status": "on_track" }
+          ]
+        }
+      ]
+    }
+  ]
+}

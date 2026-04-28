@@ -23,7 +23,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Check, Clipboard, Plus, Code2 } from "lucide-react"
-import { ConnectorConfig, ConnectorProvider } from "@/lib/connectors/types"
+import { ConnectorConfig, ConnectorProvider, MetricDefinition } from "@/lib/connectors/types"
 
 interface NewConnectorDialogProps {
     onConnectorCreated?: (config: ConnectorConfig) => void
@@ -57,6 +57,27 @@ export function NewConnectorDialog({ onConnectorCreated, initialData, children }
     const generateId = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '_')
 
     const createConfigObject = (): ConnectorConfig => {
+        let metrics: MetricDefinition[] = initialData?.metrics || []
+        let discovery = initialData?.discovery || {
+            totalDatasets: 0,
+            totalTables: 0,
+            lastRefreshed: new Date().toISOString(),
+            schemaHash: ''
+        }
+
+        // Try to enrich from JSON content if it exists (for sample/manual config)
+        if (formData.jsonContent) {
+            try {
+                const parsed = JSON.parse(formData.jsonContent)
+                if (parsed.metrics && Array.isArray(parsed.metrics)) {
+                    metrics = parsed.metrics
+                }
+                if (parsed.discovery) {
+                    discovery = { ...discovery, ...parsed.discovery }
+                }
+            } catch (e) { }
+        }
+
         return {
             metadata: {
                 id: formData.id || generateId(formData.name) || 'new_connector',
@@ -86,12 +107,8 @@ export function NewConnectorDialog({ onConnectorCreated, initialData, children }
                     }]
                     : [],
             validation: initialData?.validation || [],
-            discovery: initialData?.discovery || {
-                totalDatasets: 0,
-                totalTables: 0,
-                lastRefreshed: new Date().toISOString(),
-                schemaHash: ''
-            }
+            discovery,
+            metrics
         }
     }
 
@@ -158,6 +175,7 @@ export const ${formData.id ? formData.id.toUpperCase() : 'NEW_CONNECTOR'}: Conne
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="bigquery">Google BigQuery</SelectItem>
+                                        <SelectItem value="simulation">Simulation / Persona Data</SelectItem>
                                         <SelectItem value="snowflake">Snowflake</SelectItem>
                                         <SelectItem value="redshift">Redshift</SelectItem>
                                         <SelectItem value="postgres">PostgreSQL</SelectItem>
@@ -300,13 +318,70 @@ export const ${formData.id ? formData.id.toUpperCase() : 'NEW_CONNECTOR'}: Conne
 
                 <DialogFooter>
                     {step === 'details' ? (
-                        <div className="flex gap-2 justify-end w-full">
-                            <Button variant="ghost" onClick={() => setStep('code')} disabled={!formData.name || !formData.provider}>
-                                View Code
-                            </Button>
-                            <Button onClick={handleCreate} disabled={!formData.name || !formData.provider}>
-                                {isEditMode ? 'Save Changes' : 'Create Connection'}
-                            </Button>
+                        <div className="flex gap-2 justify-between w-full">
+                            <div>
+                                <Button
+                                    variant="outline"
+                                    className="text-xs h-9 text-slate-500 hover:text-slate-900"
+                                    onClick={() => {
+                                        setFormData({
+                                            name: 'Simulation - Executive Dashboard',
+                                            provider: 'bigquery',
+                                            id: 'simulation_full',
+                                            region: 'asia-south1',
+                                            project: 'clx-simulation',
+                                            dataset: 'sim_dataset_v1',
+                                            jsonContent: JSON.stringify({
+                                                type: "service_account",
+                                                project_id: "clx-simulation",
+                                                metrics: [
+                                                    { id: "revenue_growth", label: "Revenue Growth Rate", formula: "Trend Model", unit: "percent", table: "transactions", sql: "SUM(amount)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "net_profit", label: "Net Profit Margin", formula: "Trend Model", unit: "percent", table: "monthly_snapshots", sql: "AVG(profit)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "roic", label: "ROIC", formula: "Trend Model", unit: "percent", table: "monthly_snapshots", sql: "AVG(roic)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "eps", label: "EPS", formula: "Trend Model", unit: "currency", table: "monthly_snapshots", sql: "AVG(eps)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "ebitda", label: "EBITDA Margin", formula: "Trend Model", unit: "percent", table: "monthly_snapshots", sql: "AVG(ebitda)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "op_cashflow", label: "Operating Cash Flow", formula: "Trend Model", unit: "currency", table: "monthly_snapshots", sql: "SUM(cashflow)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "free_cashflow", label: "Free Cash Flow", formula: "Trend Model", unit: "currency", table: "monthly_snapshots", sql: "SUM(fcf)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "cost_income", label: "Cost-to-Income Ratio", formula: "Trend Model", unit: "percent", table: "monthly_snapshots", sql: "AVG(ratio)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "interest_margin", label: "Net Interest Margin", formula: "Trend Model", unit: "percent", table: "monthly_snapshots", sql: "AVG(nim)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "credit_losses", label: "Provision for Credit Losses", formula: "Trend Model", unit: "currency", table: "monthly_snapshots", sql: "SUM(losses)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "charge_off", label: "Net Charge-Off Rate", formula: "Trend Model", unit: "percent", table: "monthly_snapshots", sql: "AVG(nco)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "delinquency", label: "Delinquency Rate", formula: "Trend Model", unit: "percent", table: "monthly_snapshots", sql: "AVG(delinq)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "cac", label: "CAC", formula: "Trend Model", unit: "currency", table: "transactions", sql: "AVG(cac)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "clv", label: "CLV", formula: "Trend Model", unit: "currency", table: "customers", sql: "AVG(clv)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "retention", label: "Customer Retention Rate", formula: "Trend Model", unit: "percent", table: "customers", sql: "AVG(retention)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "arpu", label: "ARPU", formula: "Trend Model", unit: "currency", table: "transactions", sql: "AVG(arpu)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "nps", label: "NPS", formula: "Trend Model", unit: "percent", table: "customers", sql: "AVG(nps)", isTimeseries: true, dateColumn: "date" },
+                                                    { id: "digital_adoption", label: "Digital Adoption Rate", formula: "Trend Model", unit: "percent", table: "customers", sql: "AVG(adoption)", isTimeseries: true, dateColumn: "date" }
+                                                ],
+                                                discovery: {
+                                                    totalDatasets: 1,
+                                                    totalTables: 4,
+                                                    datasets: [{
+                                                        id: "sim_dataset_v1",
+                                                        tables: [
+                                                            { id: "customers", schema: [{ name: "customer_id", type: "STRING" }, { name: "adoption", type: "FLOAT" }, { name: "nps", type: "FLOAT" }, { name: "clv", type: "FLOAT" }] },
+                                                            { id: "transactions", schema: [{ name: "date", type: "DATE" }, { name: "amount", type: "FLOAT" }, { name: "arpu", type: "FLOAT" }] },
+                                                            { id: "accounts", schema: [{ name: "account_id", type: "STRING" }, { name: "credit_limit", type: "FLOAT" }, { name: "fico", type: "INTEGER" }] },
+                                                            { id: "monthly_snapshots", schema: [{ name: "date", type: "DATE" }, { name: "profit", type: "FLOAT" }, { name: "roic", type: "FLOAT" }, { name: "delinq", type: "FLOAT" }, { name: "churn", type: "FLOAT" }] }
+                                                        ]
+                                                    }]
+                                                }
+                                            }, null, 2)
+                                        })
+                                    }}
+                                >
+                                    Load Sample Data
+                                </Button>
+                            </div>
+                            <div className="flex gap-2">
+                                <Button variant="ghost" onClick={() => setStep('code')} disabled={!formData.name || !formData.provider}>
+                                    View Code
+                                </Button>
+                                <Button onClick={handleCreate} disabled={!formData.name || !formData.provider}>
+                                    {isEditMode ? 'Save Changes' : 'Create Connection'}
+                                </Button>
+                            </div>
                         </div>
                     ) : (
                         <Button variant="outline" onClick={() => setOpen(false)}>

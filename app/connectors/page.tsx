@@ -36,11 +36,12 @@ export default function ConnectorsPage() {
 
     useEffect(() => {
         // VERSION CHECK: Force clear old data
-        const currentVersion = "v2_clean"
+        const currentVersion = "v4_simulation_fixed"
         const savedVersion = sessionStorage.getItem("dashboard_version")
         if (savedVersion !== currentVersion) {
             sessionStorage.removeItem("dashboard_connectors")
             sessionStorage.removeItem("active_dashboard_connector_id")
+            sessionStorage.removeItem("dashboard_config")
             sessionStorage.setItem("dashboard_version", currentVersion)
             // Reload to ensure we start clean
             window.location.reload()
@@ -407,10 +408,13 @@ export default function ConnectorsPage() {
                                                         <p className="text-sm text-muted-foreground mt-1">
                                                             Checking <code>GOOGLE_APPLICATION_CREDENTIALS</code> and <code>GOOGLE_CLOUD_PROJECT</code>.
                                                         </p>
-                                                        {handshake?.hasCredentials ?
-                                                            <p className="text-xs text-emerald-600 mt-2 font-medium">Variables Present</p> :
+                                                        {handshake?.hasCredentials ? (
+                                                            <p className="text-xs text-emerald-600 mt-2 font-medium">
+                                                                {handshake.isEnvAuth ? 'Variables Present (Server Environment)' : 'Variables Present (Dynamic)'}
+                                                            </p>
+                                                        ) : (
                                                             <p className="text-xs text-red-600 mt-2 font-medium">Missing Credentials</p>
-                                                        }
+                                                        )}
                                                     </div>
                                                 </div>
 

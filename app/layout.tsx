@@ -39,8 +39,7 @@ export const metadata: Metadata = {
 
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
-
-// ... imports
+import Script from "next/script"
 
 export default function RootLayout({
   children,
@@ -74,6 +73,13 @@ export default function RootLayout({
           </ColorThemeProvider>
         </ThemeProvider>
         <Toaster />
+        {process.env.NODE_ENV === "development" && (
+          <Script
+            src="//unpkg.com/react-grab/dist/index.global.js"
+            crossOrigin="anonymous"
+            strategy="beforeInteractive"
+          />
+        )}
       </body>
     </html>
   );
